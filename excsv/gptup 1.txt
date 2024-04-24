@@ -1,0 +1,294 @@
+<?php
+// Filename: workout.php
+// Path: /htdocs/workout.php
+// Date Edited: 2024-04-23
+// Time Edited: 4:00 PM
+// Revision Number: 1.3
+
+include 'header.php'; // Includes the DB connection
+
+if (!isset($_SESSION['admin_logged_in'])) {
+    header('Location: admin.php');
+    exit;
+}
+
+$totalExercises = $_POST['total_exercises'] ?? 1;
+$workoutDuration = $_POST['workout_duration'] ?? 30;
+$restDuration = $_POST['rest_duration'] ?? 30;
+$sets = $_POST['sets'] ?? 1;
+$selectedMuscleGroups = $_POST['muscle_groups'] ?? [];
+$selectedIntensities = $_POST['intensity'] ?? [];
+
+$muscleCondition = implode(" OR ", array_map(function($item) use ($conn) { return "muscle_groups LIKE '%" . mysqli_real_escape_string($conn, $item) . "%'"; }, $selectedMuscleGroups));
+$intensityCondition = implode(" OR ", array_map(function($item) use ($conn) { return "impact_level = '" . mysqli_real_escape_string($conn, $item) . "'"; }, $selectedIntensities));
+
+$query = $conn->prepare("SELECT * FROM exercises WHERE ($muscleCondition) AND ($intensityCondition) ORDER BY RAND() LIMIT ?");
+$query->bind_param("i", $totalExercises);
+$query->execute();
+$result = $query->get_result();
+
+$exercises = [];
+while ($row = $result->fetch_assoc()) {
+    $exercises[] = $row;
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workout Schedule</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="timer.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Workout Schedule</h1>
+    <?php if (empty($exercises)): ?>
+        <p>No exercises selected or found. Please go back and select exercises.</p>
+    <?php else: ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>Set Number</th>
+                    <th>Exercise</th>
+                    <th>Workout Time (seconds)</th>
+                    <th>Rest Time (seconds)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php for ($set = 1; $set <= $sets; $set++): ?>
+                    <?php foreach ($exercises as $exercise): ?>
+                    <tr>
+                        <td>Set <?= $set; ?></td>
+                        <td><?= htmlspecialchars($exercise['name']); ?></td>
+                        <td><?= $workoutDuration; ?></td>
+                        <td><?= $restDuration; ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endfor; ?>
+            </tbody>
+        </table>
+        <!-- Button to start the workout timer -->
+        <button onclick="initializeTimer(<?php echo htmlspecialchars(json_encode($exercises)); ?>, <?php echo $workoutDuration; ?>, <?php echo $restDuration; ?>, <?php echo $sets; ?>)">Start Workout</button>
+    <?php endif; ?>
+</div>
+</body>
+</html>
+
+******************************************
+<?php
+// Filename: exercise.php
+// Path: /htdocs/exercise.php
+// Date Edited: 2024-04-22
+// Revision Number: 1.8
+
+include 'header.php'; // Includes the DB connection
+
+if (!isset($_SESSION['admin_logged_in'])) {
+    header('Location: admin.php');
+    exit;
+}
+
+// Fetch available muscle groups
+$muscleGroupsResult = $conn->query("SELECT DISTINCT muscle_groups FROM exercises");
+$allMuscleGroups = [];
+while ($row = $muscleGroupsResult->fetch_assoc()) {
+    $parts = explode(',', $row['muscle_groups']);
+    foreach ($parts as $part) {
+        $trimmedPart = trim($part);
+        if (!in_array($trimmedPart, $allMuscleGroups)) {
+            $allMuscleGroups[] = $trimmedPart;
+        }
+    }
+}
+
+// Fetch unique intensity levels
+$intensityLevelsResult = $conn->query("SELECT DISTINCT impact_level FROM exercises");
+$intensityLevels = [];
+while ($row = $intensityLevelsResult->fetch_assoc()) {
+    $level = trim($row['impact_level']);
+    if (!in_array($level, $intensityLevels)) {
+        $intensityLevels[] = $level;
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exercise Selector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Select Exercises</h1>
+    <form action="workout.php" method="post">
+        <div class="form-section">
+            <h3>Muscle Groups:</h3>
+            <?php foreach ($allMuscleGroups as $group): ?>
+            <label>
+                <input type="checkbox" name="muscle_groups[]" value="<?= htmlspecialchars($group); ?>">
+                <?= htmlspecialchars($group); ?>
+            </label>
+            <?php endforeach; ?>
+        </div>
+        <div class="form-section">
+            <h3>Intensity Levels:</h3>
+            <?php foreach ($intensityLevels as $level): ?>
+            <label>
+                <input type="checkbox" name="intensity[]" value="<?= htmlspecialchars($level); ?>">
+                <?= htmlspecialchars($level); ?>
+            </label>
+            <?php endforeach; ?>
+        </div>
+        <div class="form-section">
+            <label>Total Number of Unique Exercises:</label>
+            <select name="total_exercises">
+                <?php for ($i = 1; $i <= 50; $i++): ?>
+                <option value="<?= $i; ?>"><?= $i; ?></option>
+                <?php endfor; ?>
+            </select>
+            <label>Workout Duration (seconds):</label>
+            <select name="workout_duration">
+                <?php for ($i = 5; $i <= 300; $i += 5): ?>
+                <option value="<?= $i; ?>"><?= $i; ?></option>
+                <?php endfor; ?>
+            </select>
+            <label>Rest Duration (seconds):</label>
+            <select name="rest_duration">
+                <?php for ($i = 5; $i <= 300; $i += 5): ?>
+                <option value="<?= $i; ?>"><?= $i; ?></option>
+                <?php endfor; ?>
+            </select>
+            <label>Sets:</label>
+            <select name="sets">
+                <?php for ($i = 1; $i <= 20; $i++): ?>
+                <option value="<?= $i; ?>"><?= $i; ?></option>
+                <?php endfor; ?>
+            </select>
+            <input type="submit" value="Find Exercises">
+        </div>
+    </form>
+    <!-- Include the random workout form at the bottom -->
+    <?php include 'random_workout_form.php'; ?>
+</div>
+</body>
+</html>
+
+*************************************************
+// Filename: timer.js
+// Path: /htdocs/timer.js
+// Date Edited: 2024-04-23
+// Revision Number: 1.0
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Definitions and initial setup
+    let exercises = [
+        { name: "Exercise 1", workoutTime: 120, restTime: 60, description: "Description here", howTo: "How-to here" },
+        // Add more exercises as needed
+    ];
+    let currentExercise = 0;
+    let isWorkout = true;
+    let timerSeconds = exercises[0].workoutTime;
+
+    // Start the first exercise automatically
+    startNextExercise();
+
+    // Element references
+    const exerciseNameElement = document.getElementById("exerciseName");
+    const timerElement = document.getElementById("timer");
+
+    function startNextExercise() {
+        let exercise = exercises[currentExercise];
+        exerciseNameElement.innerText = exercise.name;
+        exerciseNameElement.style.cursor = 'pointer';
+        exerciseNameElement.onclick = function() { openDetailWindow(exercise); };
+        timerSeconds = isWorkout ? exercise.workoutTime : exercise.restTime;
+        updateTimerDisplay();
+    }
+
+    function openDetailWindow(exercise) {
+        const detailWindow = window.open("", "_blank", "width=600,height=400");
+        detailWindow.document.write(`
+            <html>
+            <head>
+                <title>${exercise.name} Details</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    #close { float: right; cursor: pointer; }
+                    #mainArea { overflow-y: scroll; height: 300px; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+                    .button { padding: 10px 20px; width: 100%; font-size: 18px; }
+                </style>
+            </head>
+            <body>
+                <div id="header">
+                    <h1>${exercise.name}</h1>
+                    <span id="close" onclick="window.close()">Close</span>
+                </div>
+                <div id="mainArea">
+                    <p>${exercise.description || 'No description available.'}</p>
+                    <p>${exercise.howTo || 'No specific instructions.'}</p>
+                </div>
+                <button class="button" onclick="window.close()">Close</button>
+            </body>
+            </html>
+        `);
+    }
+
+    function updateTimerDisplay() {
+        let minutes = Math.floor(timerSeconds / 60);
+        let seconds = timerSeconds % 60;
+        timerElement.innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        timerElement.className = isWorkout ? 'workout' : 'rest';
+    }
+
+    function toggleTimer() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            clearInterval(timerInterval);
+            timerElement.classList.add('blink');
+        } else {
+            timerElement.classList.remove('blink');
+            countdown();
+        }
+    }
+
+    function countdown() {
+        timerInterval = setInterval(function() {
+            if (timerSeconds > 0) {
+                timerSeconds--;
+                updateTimerDisplay();
+            } else {
+                clearInterval(timerInterval);
+                switchToNextPhase();
+            }
+        }, 1000);
+    }
+
+    function playBellSound() {
+        let audio = new Audio('bell_sound.mp3');
+        audio.play();
+    }
+
+    function switchToNextPhase() {
+        if (isWorkout) {
+            isWorkout = false;
+            timerSeconds = exercises[currentExercise].restTime;
+        } else {
+            isWorkout = true;
+            if (currentExercise < exercises.length - 1) {
+                currentExercise++;
+            } else {
+                currentExercise = 0; // Start over or finish the routine
+            }
+            timerSeconds = exercises[currentExercise].workoutTime;
+        }
+        startNextExercise();
+    }
+});
+
+*************************************************************
+
+

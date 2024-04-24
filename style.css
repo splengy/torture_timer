@@ -1,0 +1,188 @@
+/* file path: /htdocs/style.css */
+/* Date Edited: 2024-04-22 */
+body {
+    background-color: black;
+    font-family: 'Arial', sans-serif;
+    color: #39ff14; /* Neon green text */
+    text-align: center;
+}
+
+.container {
+    width: 80%;
+    min-width: 300px; /* Minimum width to ensure usability on smaller screens */
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box; /* Includes padding in width calculation */
+}
+
+h1 {
+    color: #ff1493; /* Neon pink */
+}
+
+p {
+    color: #39ff14; /* Neon green */
+}
+
+button, input[type="submit"] {
+    background: #00ffff; /* Neon cyan */
+    border: none;
+    color: black;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+}
+
+button:hover, input[type="submit"]:hover {
+    background: #ff1493; /* Neon pink */
+    transform: scale(1.1);
+}
+
+form {
+    margin-top: 20px;
+}
+
+form input, form button {
+    margin-top: 10px;
+    width: 100%; /* Make inputs expand to the full width of the form */
+    padding: 8px;
+    box-sizing: border-box; /* Includes padding in width calculation */
+}
+
+label {
+    color: #39ff14; /* Neon green */
+    font-size: 16px;
+    display: inline-block; /* Makes labels appear in line for checkbox and radio */
+    margin: 10px 10px 5px 0; /* Spacing for better readability and horizontal layout */
+}
+
+input[type="radio"], input[type="checkbox"] {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.forgot-password, .error {
+    margin-top: 10px;
+    color: #ff4747; /* Adjust color as needed */
+}
+
+/* Adjustments for the overall input and button styling */
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    background-color: #4CAF50; /* Green background for submit button */
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+input[type="submit"]:hover {
+    opacity: 0.8;
+}
+
+.container {
+    padding: 16px;
+    text-align: center;
+    background-color: black; /* Light grey background */
+}
+
+.widget {
+    background-color: #f0f0f0; /* Light grey background for widgets */
+    border: 1px solid #ccc; /* Subtle border for definition */
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.widget h2 {
+    color: #333; /* Dark grey for titles */
+}
+
+.widget p {
+    color: #666; /* Medium grey for text */
+}
+
+.widget button {
+    background-color: #0084ff; /* Bright blue for buttons */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.widget button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* General table styling for a Windows 98 look */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #f0f0f0;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #d3d3d3;
+}
+
+td {
+    background-color: #fff;
+}
+
+/* Making description cells scrollable */
+.scrollable {
+    max-height: 50px;
+    overflow-y: auto;
+}
+
+/* Modestly sized inputs */
+input[type="text"], input[type="number"], select {
+    font-family: 'Courier New', monospace;
+    padding: 5px;
+    margin: 5px;
+}
+
+input[type="submit"] {
+    background-color: #d3d3d3;
+    border: 1px solid #000;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #c3c3c3;
+}
+
+/* Timer Styling */
+#timer.workout {
+    background-color: green; /* Green background during workout */
+    color: white; /* White text for better visibility */
+}
+#timer.rest, #footer .button {
+    background-color: red; /* Red background during rest and for the pause button */
+    color: white;
+}
+.blink {
+    animation: blinker 1s linear infinite;
+}
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+

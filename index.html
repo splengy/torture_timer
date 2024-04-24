@@ -1,0 +1,36 @@
+<!-- file path: /htdocs/index.php -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to the Exercise App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Exercise App!</h1>
+        <p>Get ready to track and enhance your workouts with precision.</p>
+        
+        <button id="loginButton">Login</button>
+        <form id="loginForm" style="display:none;" method="post" action="login.php">
+            Username: <input type="text" name="username" required><br>
+            Password: <input type="password" name="password" required><br>
+            <input type="submit" value="Login">
+        </form>
+
+        <button id="registerButton">Register</button>
+        <form id="registrationForm" style="display:none;" method="post" action="register.php">
+            Username: <input type="text" name="username" required><br>
+            Password: <input type="password" name="password" required><br>
+            Verify Password: <input type="password" name="password_verify" required><br>
+            Height: <input type="text" name="height" required><br>
+            Weight: <input type="text" name="weight" required><br>
+            Age: <input type="number" name="age" required><br>
+            Gender: <input type="text" name="gender" required><br>
+            Preference (Metric/Imperial): <input type="text" name="preference" required><br>
+            <input type="submit" value="Register">
+        </form>
+    </div>
+</body>
+</html>
